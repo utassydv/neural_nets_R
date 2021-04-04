@@ -65,11 +65,11 @@ getLabel <- function(num){
 showPic <- function(data, label, i) {
   image(
     rotate(data[i,,]),
-    col = gray.colors(255), xlab=getLabel(label[i]), ylab = ""
+    col = gray.colors(255), xlab=getLabel(if(label == 10) 10 else label[i] ), ylab = ""
   )
 }
 
-showFirstXPic <- function(X, data, label) {
+showFirstXPic <- function(X, data, label=10) {
   par(mfrow = c(X/3, 3))
   for (i in 1:X){
     showPic(data, label,i)
@@ -77,5 +77,373 @@ showFirstXPic <- function(X, data, label) {
 }
 
 
-showFirstXPic(6 ,x_train, y_train)
+showFirstXPic(6, x_train, y_train)
+showFirstXPic(6, x_test)
+```
+```{r data_prep_4_keras}
+#scale
+x_train <- as.matrix(as.data.frame.array(x_train)) / 255
+x_test <- as.matrix(as.data.frame.array(x_test)) / 255
+
+#one-hot encodeing
+y_train_label <- y_train
+y_test_label <-y_test
+y_train <- to_categorical(y_train, 10)
+y_test <- to_categorical(y_test, 10)
+
+my_epoch <- 40
+
+```
+
+```{r nn1}
+model1 <- keras_model_sequential()
+model1 %>%
+  layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
+  layer_dropout(rate = 0.3) %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  model1,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+model1_fit <- fit(
+  model1, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test),
+  verbose = 1,
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#model1 <- load_model_hdf5("models/model1.h5")
+
+saveRDS(model1_fit, "models/model1_fit.rds")
+save_model_hdf5(model1, "models/model1.h5")
+```
+
+```{r nn2}
+model2 <- keras_model_sequential()
+model2 %>%
+  layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
+  layer_dense(units = 128, activation = 'relu') %>%
+  layer_dropout(rate = 0.3) %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  model2,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+model2_fit <-  fit(
+  model2, x_train, y_train,
+  epochs = 5, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#model2 <- load_model_hdf5("models/model2.h5")
+
+saveRDS(model2_fit, "models/model2_fit.rds")
+save_model_hdf5(model2, "models/model2.h5")
+```
+
+```{r nn3}
+model3 <- keras_model_sequential()
+model3 %>%
+  layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  model3,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+model3_fit <-  fit(
+  model3, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#model3 <- load_model_hdf5("models/model3.h5")
+
+saveRDS(model3_fit, "models/model3_fit.rds")
+save_model_hdf5(model3, "models/model3.h5")
+```
+
+```{r nn4}
+model4 <- keras_model_sequential()
+model4 %>%
+  layer_dense(units = 64, activation = 'relu', input_shape = c(784)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  model4,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+model4_fit <-  fit(
+  model4, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#model4 <- load_model_hdf5("models/model4.h5")
+
+saveRDS(model4_fit, "models/model4_fit.rds")
+save_model_hdf5(model4, "models/model4.h5")
+```
+
+```{r nn5}
+model5 <- keras_model_sequential()
+model5 %>%
+  layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
+  layer_dense(units = 64, activation = 'relu') %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  model5,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+model5_fit <-  fit(
+  model5, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#model5 <- load_model_hdf5("models/model5.h5")
+
+saveRDS(model5_fit, "models/model5_fit.rds")
+save_model_hdf5(model5, "models/model5.h5")
+```
+
+```{r res1}
+results <- data.frame(stat = c('val_loss', 'val_accuracy')) 
+my_nn_models <- c(model1, model2, model3, model4, model5) 
+for(model in my_nn_models){
+  results <- cbind(results, evaluate(model, x_test, y_test))
+}
+```
+
+
+CONV
+```{r reshape-for-conv}
+x_train <- array_reshape(x_train, c(nrow(x_train), 28, 28, 1))
+x_test <- array_reshape(x_test, c(nrow(x_test), 28, 28, 1))
+```
+
+```{r cnn1}
+cnn_model1 <- keras_model_sequential()
+cnn_model1 %>%
+  layer_conv_2d(
+    filters = 32,
+    kernel_size = c(3, 3),
+    activation = 'relu',
+    input_shape = c(28, 28, 1)
+  ) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.25) %>%
+  layer_flatten() %>%
+  layer_dense(units = 16, activation = 'relu') %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  cnn_model1,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+cnn_model1_fit <-  fit(
+  cnn_model1, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#cnn_model1 <- load_model_hdf5("models/cnn_model1.h5")
+
+saveRDS(cnn_model1_fit, "models/cnn_model1_fit.rds")
+save_model_hdf5(cnn_model1, "models/cnn_model1.h5")
+```
+
+```{r cnn2}
+cnn_model2 <- keras_model_sequential()
+cnn_model2 %>%
+  layer_conv_2d(
+    filters = 32,
+    kernel_size = c(3, 3),
+    activation = 'relu',
+    input_shape = c(28, 28, 1)
+  ) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_flatten() %>%
+  layer_dense(units = 16, activation = 'relu') %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  cnn_model2,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+cnn_model2_fit <-  fit(
+  cnn_model2, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#nn_model2 <- load_model_hdf5("models/cnn_model2.h5")
+
+saveRDS(cnn_model2_fit, "models/cnn_model2_fit.rds")
+save_model_hdf5(cnn_model2, "models/cnn_model2.h5")
+```
+
+```{r cnn3}
+cnn_model3 <- keras_model_sequential()
+cnn_model3 %>%
+  layer_conv_2d(
+    filters = 32,
+    kernel_size = c(3, 3),
+    activation = 'relu',
+    input_shape = c(28, 28, 1)
+  ) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.3) %>%
+  layer_flatten() %>%
+  layer_dense(units = 16, activation = 'relu') %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  cnn_model3,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+cnn_model3_fit <-  fit(
+  cnn_model3, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+)
+#cnn_model3 <- load_model_hdf5("models/cnn_model3.h5")
+
+saveRDS(cnn_model3_fit, "models/cnn_model3_fit.rds")
+save_model_hdf5(cnn_model3, "models/cnn_model3.h5")
+```
+
+```{r cnn4}
+cnn_model4 <- keras_model_sequential()
+cnn_model4 %>%
+  layer_conv_2d(
+    filters = 32,
+    kernel_size = c(3, 3),
+    activation = 'relu',
+    input_shape = c(28, 28, 1)
+  ) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_flatten() %>%
+  layer_dense(units = 128, activation = 'relu') %>%
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  cnn_model4,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+cnn_model4_fit <-  fit(
+  cnn_model4, x_train, y_train,
+  epochs = my_epoch, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1, patience = 5))
+)
+#cnn_model4 <- load_model_hdf5("models/cnn_model4.h5")
+
+saveRDS(cnn_model4_fit, "models/cnn_model4_fit.rds")
+save_model_hdf5(cnn_model4, "models/cnn_model4.h5")
+```
+
+```{r cnn5}
+cnn_model5 <- keras_model_sequential()
+cnn_model5 %>%
+  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = 'relu', input_shape = c(28, 28, 1)) %>%
+  layer_batch_normalization() %>% 
+
+  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = 'relu') %>%
+  layer_batch_normalization() %>% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.25) %>%
+  
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = 'relu') %>%
+  layer_batch_normalization() %>% 
+  layer_dropout(rate = 0.25) %>%
+  
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = 'relu') %>%
+  layer_batch_normalization() %>% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.25) %>%
+  
+  layer_flatten() %>%
+  layer_dense(units = 512, activation = 'relu') %>%
+  layer_batch_normalization() %>%
+  layer_dropout(rate = 0.5) %>%
+  
+  layer_dense(units = 10, activation = 'softmax')
+
+compile(
+  cnn_model5,
+  loss = 'categorical_crossentropy',
+  optimizer = optimizer_rmsprop(),
+  metrics = c('accuracy')
+)
+
+cnn_model5_fit <-  fit(
+  cnn_model5, x_train, y_train,
+  epochs = 20, batch_size = 128,
+  validation_data = list(x_test, y_test), 
+  callbacks = list(
+    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1, patience = 5, min_delta = 1e-03))
+)
+#cnn_model5 <- load_model_hdf5("models/cnn_model5.h5")
+
+saveRDS(cnn_model5_fit, "models/cnn_model5_fit.rds")
+save_model_hdf5(cnn_model5, "models/cnn_model5.h5")
+```
+
+```{r res2}
+my_cnn_models <- c(cnn_model1, cnn_model2, cnn_model3, cnn_model4, cnn_model5)
+for(model in my_cnn_models){
+  results <- cbind(results, evaluate(model, x_test, y_test))
+}
+
+colnames(results) <- c('stat', 'nn_model1', 'nn_model2', 'nn_model3', 'nn_model4', 'nn_model5',
+                       'cnn_model1', 'cnn_model2', 'cnn_model3', 'cnn_model4', 'cnn_model5')
+results$stat <- NULL
+results <- t(results)
+colnames(results) <- c('val_loss', 'val_accuracy')
 ```
