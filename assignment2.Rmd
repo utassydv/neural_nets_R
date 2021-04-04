@@ -119,7 +119,7 @@ compile(
 #)
 model1 <- load_model_hdf5("models/model1.h5")
 
-saveRDS(model1_fit, "models/model1_fit.rds")
+#saveRDS(model1_fit, "models/model1_fit.rds")
 save_model_hdf5(model1, "models/model1.h5")
 ```
 
@@ -147,7 +147,7 @@ compile(
 #)
 model2 <- load_model_hdf5("models/model2.h5")
 
-saveRDS(model2_fit, "models/model2_fit.rds")
+#saveRDS(model2_fit, "models/model2_fit.rds")
 save_model_hdf5(model2, "models/model2.h5")
 ```
 
@@ -174,7 +174,7 @@ compile(
 #)
 model3 <- load_model_hdf5("models/model3.h5")
 
-saveRDS(model3_fit, "models/model3_fit.rds")
+#saveRDS(model3_fit, "models/model3_fit.rds")
 save_model_hdf5(model3, "models/model3.h5")
 ```
 
@@ -201,7 +201,7 @@ compile(
 #)
 model4 <- load_model_hdf5("models/model4.h5")
 
-saveRDS(model4_fit, "models/model4_fit.rds")
+#saveRDS(model4_fit, "models/model4_fit.rds")
 save_model_hdf5(model4, "models/model4.h5")
 ```
 
@@ -229,7 +229,7 @@ compile(
 #)
 model5 <- load_model_hdf5("models/model5.h5")
 
-saveRDS(model5_fit, "models/model5_fit.rds")
+#saveRDS(model5_fit, "models/model5_fit.rds")
 save_model_hdf5(model5, "models/model5.h5")
 ```
 
@@ -279,7 +279,7 @@ compile(
 #)
 cnn_model1 <- load_model_hdf5("models/cnn_model1.h5")
 
-saveRDS(cnn_model1_fit, "models/cnn_model1_fit.rds")
+#saveRDS(cnn_model1_fit, "models/cnn_model1_fit.rds")
 save_model_hdf5(cnn_model1, "models/cnn_model1.h5")
 ```
 
@@ -314,7 +314,7 @@ compile(
 #)
 nn_model2 <- load_model_hdf5("models/cnn_model2.h5")
 
-saveRDS(cnn_model2_fit, "models/cnn_model2_fit.rds")
+#saveRDS(cnn_model2_fit, "models/cnn_model2_fit.rds")
 save_model_hdf5(cnn_model2, "models/cnn_model2.h5")
 ```
 
@@ -349,7 +349,7 @@ compile(
 #)
 cnn_model3 <- load_model_hdf5("models/cnn_model3.h5")
 
-saveRDS(cnn_model3_fit, "models/cnn_model3_fit.rds")
+#saveRDS(cnn_model3_fit, "models/cnn_model3_fit.rds")
 save_model_hdf5(cnn_model3, "models/cnn_model3.h5")
 ```
 
@@ -384,7 +384,7 @@ compile(
 #)
 cnn_model4 <- load_model_hdf5("models/cnn_model4.h5")
 
-saveRDS(cnn_model4_fit, "models/cnn_model4_fit.rds")
+#saveRDS(cnn_model4_fit, "models/cnn_model4_fit.rds")
 save_model_hdf5(cnn_model4, "models/cnn_model4.h5")
 ```
 
@@ -431,7 +431,7 @@ compile(
 #)
 cnn_model5 <- load_model_hdf5("models/cnn_model5.h5")
 
-saveRDS(cnn_model5_fit, "models/cnn_model5_fit.rds")
+#saveRDS(cnn_model5_fit, "models/cnn_model5_fit.rds")
 save_model_hdf5(cnn_model5, "models/cnn_model5.h5")
 ```
 
