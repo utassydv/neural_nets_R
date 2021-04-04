@@ -109,15 +109,15 @@ compile(
   metrics = c('accuracy')
 )
 
-model1_fit <- fit(
-  model1, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test),
-  verbose = 1,
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#model1 <- load_model_hdf5("models/model1.h5")
+#model1_fit <- fit(
+#  model1, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test),
+#  verbose = 1,
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+model1 <- load_model_hdf5("models/model1.h5")
 
 saveRDS(model1_fit, "models/model1_fit.rds")
 save_model_hdf5(model1, "models/model1.h5")
@@ -138,14 +138,14 @@ compile(
   metrics = c('accuracy')
 )
 
-model2_fit <-  fit(
-  model2, x_train, y_train,
-  epochs = 5, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#model2 <- load_model_hdf5("models/model2.h5")
+#model2_fit <-  fit(
+#  model2, x_train, y_train,
+#  epochs = 5, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+model2 <- load_model_hdf5("models/model2.h5")
 
 saveRDS(model2_fit, "models/model2_fit.rds")
 save_model_hdf5(model2, "models/model2.h5")
@@ -165,14 +165,14 @@ compile(
   metrics = c('accuracy')
 )
 
-model3_fit <-  fit(
-  model3, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#model3 <- load_model_hdf5("models/model3.h5")
+#model3_fit <-  fit(
+#  model3, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+model3 <- load_model_hdf5("models/model3.h5")
 
 saveRDS(model3_fit, "models/model3_fit.rds")
 save_model_hdf5(model3, "models/model3.h5")
@@ -192,14 +192,14 @@ compile(
   metrics = c('accuracy')
 )
 
-model4_fit <-  fit(
-  model4, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#model4 <- load_model_hdf5("models/model4.h5")
+#model4_fit <-  fit(
+#  model4, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+model4 <- load_model_hdf5("models/model4.h5")
 
 saveRDS(model4_fit, "models/model4_fit.rds")
 save_model_hdf5(model4, "models/model4.h5")
@@ -220,14 +220,14 @@ compile(
   metrics = c('accuracy')
 )
 
-model5_fit <-  fit(
-  model5, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#model5 <- load_model_hdf5("models/model5.h5")
+#model5_fit <-  fit(
+#  model5, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+model5 <- load_model_hdf5("models/model5.h5")
 
 saveRDS(model5_fit, "models/model5_fit.rds")
 save_model_hdf5(model5, "models/model5.h5")
@@ -270,14 +270,14 @@ compile(
   metrics = c('accuracy')
 )
 
-cnn_model1_fit <-  fit(
-  cnn_model1, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#cnn_model1 <- load_model_hdf5("models/cnn_model1.h5")
+#cnn_model1_fit <-  fit(
+#  cnn_model1, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+cnn_model1 <- load_model_hdf5("models/cnn_model1.h5")
 
 saveRDS(cnn_model1_fit, "models/cnn_model1_fit.rds")
 save_model_hdf5(cnn_model1, "models/cnn_model1.h5")
@@ -305,14 +305,14 @@ compile(
   metrics = c('accuracy')
 )
 
-cnn_model2_fit <-  fit(
-  cnn_model2, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#nn_model2 <- load_model_hdf5("models/cnn_model2.h5")
+#cnn_model2_fit <-  fit(
+#  cnn_model2, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+nn_model2 <- load_model_hdf5("models/cnn_model2.h5")
 
 saveRDS(cnn_model2_fit, "models/cnn_model2_fit.rds")
 save_model_hdf5(cnn_model2, "models/cnn_model2.h5")
@@ -340,14 +340,14 @@ compile(
   metrics = c('accuracy')
 )
 
-cnn_model3_fit <-  fit(
-  cnn_model3, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
-)
-#cnn_model3 <- load_model_hdf5("models/cnn_model3.h5")
+#cnn_model3_fit <-  fit(
+#  cnn_model3, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
+#)
+cnn_model3 <- load_model_hdf5("models/cnn_model3.h5")
 
 saveRDS(cnn_model3_fit, "models/cnn_model3_fit.rds")
 save_model_hdf5(cnn_model3, "models/cnn_model3.h5")
@@ -375,14 +375,14 @@ compile(
   metrics = c('accuracy')
 )
 
-cnn_model4_fit <-  fit(
-  cnn_model4, x_train, y_train,
-  epochs = my_epoch, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1, patience = 5))
-)
-#cnn_model4 <- load_model_hdf5("models/cnn_model4.h5")
+#cnn_model4_fit <-  fit(
+#  cnn_model4, x_train, y_train,
+#  epochs = my_epoch, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1, patience = 5))
+#)
+cnn_model4 <- load_model_hdf5("models/cnn_model4.h5")
 
 saveRDS(cnn_model4_fit, "models/cnn_model4_fit.rds")
 save_model_hdf5(cnn_model4, "models/cnn_model4.h5")
@@ -422,14 +422,14 @@ compile(
   metrics = c('accuracy')
 )
 
-cnn_model5_fit <-  fit(
-  cnn_model5, x_train, y_train,
-  epochs = 20, batch_size = 128,
-  validation_data = list(x_test, y_test), 
-  callbacks = list(
-    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1, patience = 5, min_delta = 1e-03))
-)
-#cnn_model5 <- load_model_hdf5("models/cnn_model5.h5")
+#cnn_model5_fit <-  fit(
+#  cnn_model5, x_train, y_train,
+#  epochs = 20, batch_size = 128,
+#  validation_data = list(x_test, y_test), 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1, patience = 5, min_delta = 1e-03))
+#)
+cnn_model5 <- load_model_hdf5("models/cnn_model5.h5")
 
 saveRDS(cnn_model5_fit, "models/cnn_model5_fit.rds")
 save_model_hdf5(cnn_model5, "models/cnn_model5.h5")
