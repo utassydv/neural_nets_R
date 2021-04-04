@@ -1,0 +1,81 @@
+---
+title: "Homework assignment 2"
+author: "David Utassy"
+date: '2021 04 04 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r includes}
+library(keras)
+```
+
+```{r get_data}
+fashion_mnist <- dataset_fashion_mnist()
+x_train <- fashion_mnist$train$x
+y_train <- fashion_mnist$train$y
+x_test <- fashion_mnist$test$x
+y_test <- fashion_mnist$test$y
+```
+
+```{r observe_data}
+##########################################################
+##########################################################
+trial <- x_train[1:100,,]
+
+library(data.table)
+df <- rbindlist(
+  lapply(1:nrow(trial),
+         function(y) {lapply(1:28, function(x) {
+           trial[y,x,]
+         }) %>% unlist %>% as.list
+  })
+)
+##########################################################
+##########################################################
+rotate <- function(x) t(apply(x, 2, rev))
+
+getLabel <- function(num){
+  label <- switch(
+   num+1,
+   "T-shirt/top",
+   "Trouser",
+   "Pullover",
+   "Dress",
+   "Coat",
+   "Sandal",
+   "Shirt",
+   "Sneaker",
+   "Bag",
+   "Ankle boot",
+   "Unknown"
+  )
+  return(label)
+}
+
+showPic <- function(data, label, i) {
+  image(
+    rotate(data[i,,]),
+    col = gray.colors(255), xlab=getLabel(label[i]), ylab = ""
+  )
+}
+
+showFirstXPic <- function(X, data, label) {
+  par(mfrow = c(X/3, 3))
+  for (i in 1:X){
+    showPic(data, label,i)
+  }
+}
+
+
+showFirstXPic(6 ,x_train, y_train)
+```
