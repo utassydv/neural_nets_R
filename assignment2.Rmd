@@ -5,21 +5,28 @@ date: '2021 04 04 '
 output: html_document
 ---
 
+<style>
+body {
+text-align: justify}
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Introduction
+In this assignment, the task was to build deep neural net models to predict image classes. The goal is to have as accurate classifier as possible: we are using accuracy as a measure of predictive power. 
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r includes}
+```{r includes, include=TRUE, results=F, warning=F, comment=F, message=F}
 library(keras)
+library(kableExtra)
 ```
 
-```{r get_data}
+## Data
+
+In this assignment, I have to classify images from the “Fashion MNIST dataset” [see more here](https://github.com/zalandoresearch/fashion-mnist).
+
+```{r get_data, include=TRUE, results=F, warning=F, comment=F, message=F}
 fashion_mnist <- dataset_fashion_mnist()
 x_train <- fashion_mnist$train$x
 y_train <- fashion_mnist$train$y
@@ -27,21 +34,11 @@ x_test <- fashion_mnist$test$x
 y_test <- fashion_mnist$test$y
 ```
 
-```{r observe_data}
-##########################################################
-##########################################################
-trial <- x_train[1:100,,]
+### a, Show some example images from the data.
 
-library(data.table)
-df <- rbindlist(
-  lapply(1:nrow(trial),
-         function(y) {lapply(1:28, function(x) {
-           trial[y,x,]
-         }) %>% unlist %>% as.list
-  })
-)
-##########################################################
-##########################################################
+In the following code snippet, I created some helper functions to plot some images from the dataset. (some more detailed description can be seen in the comments)
+
+```{r observe_data, include=TRUE, results=F, warning=F, comment=F, message=F}
 rotate <- function(x) t(apply(x, 2, rev))
 
 getLabel <- function(num){
@@ -80,7 +77,16 @@ showFirstXPic <- function(X, data, label=10) {
 showFirstXPic(6, x_train, y_train)
 showFirstXPic(6, x_test)
 ```
-```{r data_prep_4_keras}
+
+## Building Neural Networks:
+
+### b, Train a fully connected deep network to predict items.
+
+#### Normalize the data similarly to what we saw with MNIST.
+
+In the following code snippet, I am normalizing the data and transforming it into a form how keras needs it.
+
+```{r data_prep_4_keras, include=TRUE, results=F, warning=F, comment=F, message=F}
 #scale
 x_train <- as.matrix(as.data.frame.array(x_train)) / 255
 x_test <- as.matrix(as.data.frame.array(x_test)) / 255
@@ -95,7 +101,15 @@ my_epoch <- 40
 
 ```
 
-```{r nn1}
+#### Experiment with network architectures and settings (number of hidden layers, number of nodes, activation functions, dropout, etc.). Explain what you have tried, what worked and what did not. Present a final model. Make sure that you use enough epochs so that the validation error starts flattening out - provide a plot about the training history (plot(history)). Evaluate the model on the test set. How does test error compare to validation error?
+
+In the following code snippets, I have trained 5 different NN models. All the models have 784 input neurons as that is the number of pixels in each picture, and has 10 output neurons as that is the number of possible clothes that we want the model to classify. These output neurons have softmax activation function as we want to get probabilities for each type of clothes. 
+
+### NN Model1
+
+The first model has one hidden layer with 128 neurons and uses relu activation function. I also add a dropout “layer” here with a dropout ratio of 0.3.
+
+```{r nn1, include=TRUE, results=F, warning=F, comment=F, message=F}
 model1 <- keras_model_sequential()
 model1 %>%
   layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
@@ -123,7 +137,18 @@ model1 <- load_model_hdf5("models/model1.h5")
 save_model_hdf5(model1, "models/model1.h5")
 ```
 
-```{r nn2}
+Note, that by training models for a high number of epochs, I realized on the validation_loss that models are starting to overfit after 15-25 epoch. I found a great solution in Keras for that, which is a callback function on the fit() function called ‘callback_reduce_lr_on_plateau()‘. It reduces the learning rate if the specified metric (val_loss) stops decreasing. By adding this function into my trainings my models flattened out in a great optimum instead of starting to jump out from the optimum because of the too high learning rate near optimal spots. (you can see the training history of the first model with this method below)
+
+```{r plot_train, include=TRUE, results=F, warning=F, comment=F, message=F,  fig.align='center'}
+model1_fit <- readRDS("models/model1_fit.rds")
+plot(model1_fit, smooth = F, theme_bw = getOption("keras.plot.history.theme_bw", FALSE))
+```
+
+### NN Model 2
+
+In the second model, I tried adding one more hidden layer with 128 neurons and relu again. This turned out to be a bad idea according to the validation accuracy.
+
+```{r nn2, include=TRUE, results=F, warning=F, comment=F, message=F}
 model2 <- keras_model_sequential()
 model2 %>%
   layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
@@ -140,7 +165,7 @@ compile(
 
 #model2_fit <-  fit(
 #  model2, x_train, y_train,
-#  epochs = 5, batch_size = 128,
+#  epochs = my_epoch, batch_size = 128,
 #  validation_data = list(x_test, y_test), 
 #  callbacks = list(
 #    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
@@ -151,7 +176,11 @@ model2 <- load_model_hdf5("models/model2.h5")
 save_model_hdf5(model2, "models/model2.h5")
 ```
 
-```{r nn3}
+### NN Model 3
+
+In the third model according to my previous experience, I went back using one hidden layer and changed the dropout ratio to 0.2. It turned out to be a good decision as validation accuracy increased.
+
+```{r nn3, include=TRUE, results=F, warning=F, comment=F, message=F}
 model3 <- keras_model_sequential()
 model3 %>%
   layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
@@ -178,7 +207,11 @@ model3 <- load_model_hdf5("models/model3.h5")
 save_model_hdf5(model3, "models/model3.h5")
 ```
 
-```{r nn4}
+### NN Model 4
+
+In the fourth model, I sticked with the 0.2 dropout rate and tried to change the number of neurons in the first hidden layer to 64, which decreased accuracy slightly.
+
+```{r nn4, include=TRUE, results=F, warning=F, comment=F, message=F}
 model4 <- keras_model_sequential()
 model4 %>%
   layer_dense(units = 64, activation = 'relu', input_shape = c(784)) %>%
@@ -205,7 +238,10 @@ model4 <- load_model_hdf5("models/model4.h5")
 save_model_hdf5(model4, "models/model4.h5")
 ```
 
-```{r nn5}
+### NN Model 5
+
+In the fifth model, I tried adding one more hidden layer again but in contrast to model 2 I tried with 64 neurons now. This turned out to be a good idea as it increased accuracy.
+```{r nn5, include=TRUE, results=F, warning=F, comment=F, message=F}
 model5 <- keras_model_sequential()
 model5 %>%
   layer_dense(units = 128, activation = 'relu', input_shape = c(784)) %>%
@@ -233,22 +269,41 @@ model5 <- load_model_hdf5("models/model5.h5")
 save_model_hdf5(model5, "models/model5.h5")
 ```
 
-```{r res1}
-results <- data.frame(stat = c('val_loss', 'val_accuracy')) 
+In the table below you can see the statistics of each neural network, I described above.
+
+```{r res1, echo = FALSE , results = "asis", warning = FALSE, message = FALSE, cache=F }
+results_nn <- data.frame(stat = c('val_loss', 'val_accuracy')) 
 my_nn_models <- c(model1, model2, model3, model4, model5) 
 for(model in my_nn_models){
-  results <- cbind(results, evaluate(model, x_test, y_test))
+  results_nn <- cbind(results_nn, evaluate(model, x_test, y_test))
 }
+
+colnames(results_nn) <- c('stat', 'nn_model1', 'nn_model2', 'nn_model3', 'nn_model4', 'nn_model5')
+results_nn$stat <- NULL
+results_nn <- t(results_nn)
+colnames(results_nn) <- c('loss', 'accuracy')
+kbl(results_nn, digits = 3)  %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "center")
 ```
 
+## Building Convolutional Neural Networks:
 
-CONV
-```{r reshape-for-conv}
+#### Try building a convolutional neural network and see if you can improve test set performance. Just like before, experiment with different network architectures, regularization techniques and present your findings
+
+The following code snippet is needed to reshape data for CNNs.
+```{r reshape-for-conv, include=T, results=F, warning=F, comment=F, message=F}
 x_train <- array_reshape(x_train, c(nrow(x_train), 28, 28, 1))
 x_test <- array_reshape(x_test, c(nrow(x_test), 28, 28, 1))
 ```
 
-```{r cnn1}
+I have trained 5 different CNN in order to reach the best model. Note, that I also used the adaptive learning rate option of Keras here as described before NNs.
+
+All the models have an input shape of 28x28x1 as the pictures are in that shape, and have 10 output neurons as that is the number of possible clothes that we want the model to classify. These output neurons have softmax activation function as we want to get probabilities for each type of clothes.
+
+### CNN Model 1
+
+In the first model, I used a 2D convolutional layer with 32 filters (of 3x3) and with a relu activation function. Then, I added a 2D pooling layer of size 2x2 with an additional dropout of 0.25 ratio. After that came a simple flattening layer and the last hidden layer which was a dense layer of 16 neurons with relu. 
+
+```{r cnn1, include=TRUE, results=F, warning=F, comment=F, message=F}
 cnn_model1 <- keras_model_sequential()
 cnn_model1 %>%
   layer_conv_2d(
@@ -283,7 +338,11 @@ cnn_model1 <- load_model_hdf5("models/cnn_model1.h5")
 save_model_hdf5(cnn_model1, "models/cnn_model1.h5")
 ```
 
-```{r cnn2}
+### CNN Model 2 and 3
+
+The second and the third model is based on the first model, all I changed was the dropout rate (to 0.2 and 0.3). As the 0.2 dropout rate turned out to be better I sticked with that one in the following model.
+
+```{r cnn2, include=TRUE, results=F, warning=F, comment=F, message=F}
 cnn_model2 <- keras_model_sequential()
 cnn_model2 %>%
   layer_conv_2d(
@@ -312,13 +371,12 @@ compile(
 #  callbacks = list(
 #    callback_reduce_lr_on_plateau(monitor = "val_loss", factor = 0.1))
 #)
-nn_model2 <- load_model_hdf5("models/cnn_model2.h5")
+cnn_model2 <- load_model_hdf5("models/cnn_model2.h5")
 
 #saveRDS(cnn_model2_fit, "models/cnn_model2_fit.rds")
 save_model_hdf5(cnn_model2, "models/cnn_model2.h5")
 ```
-
-```{r cnn3}
+```{r cnn3, include=TRUE, results=F, warning=F, comment=F, message=F}
 cnn_model3 <- keras_model_sequential()
 cnn_model3 %>%
   layer_conv_2d(
@@ -353,7 +411,10 @@ cnn_model3 <- load_model_hdf5("models/cnn_model3.h5")
 save_model_hdf5(cnn_model3, "models/cnn_model3.h5")
 ```
 
-```{r cnn4}
+### CNN Model 4
+
+In the fourth model, I used the 0.2 dropout rate and I also changed the number of neurons in the last hidden dense layer from 16 to 128. This turned out to be a good idea as my validation accuracy increased by almost 1 percent.
+```{r cnn4, include=TRUE, results=F, warning=F, comment=F, message=F}
 cnn_model4 <- keras_model_sequential()
 cnn_model4 %>%
   layer_conv_2d(
@@ -388,7 +449,10 @@ cnn_model4 <- load_model_hdf5("models/cnn_model4.h5")
 save_model_hdf5(cnn_model4, "models/cnn_model4.h5")
 ```
 
-```{r cnn5}
+### CNN Model 5
+
+In the fifth model I decided to make some google search to find a more sophisticated model [under this link](https://towardsdatascience.com/the-4-convolutional-neural-network-models-that-can-classify-your-fashion-images-9fe7f3e5399d) I found the following model:
+```{r cnn5, include=TRUE, results=F, warning=F, comment=F, message=F}
 cnn_model5 <- keras_model_sequential()
 cnn_model5 %>%
   layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = 'relu', input_shape = c(28, 28, 1)) %>%
@@ -435,15 +499,24 @@ cnn_model5 <- load_model_hdf5("models/cnn_model5.h5")
 save_model_hdf5(cnn_model5, "models/cnn_model5.h5")
 ```
 
-```{r res2}
+It’s performance was great but according to validation accuracy, it can not beat model 4. Also, I would like to note here that I only trained for 20 epochs as the training of this model was very time-consuming. Training further might have improved its results.
+ 
+In the table below you can see the statistics of each neural network, I described above.
+```{r res2, echo = FALSE , results = "asis", warning = FALSE, message = FALSE, cache=F }
+results_cnn <- data.frame(stat = c('val_loss', 'val_accuracy')) 
 my_cnn_models <- c(cnn_model1, cnn_model2, cnn_model3, cnn_model4, cnn_model5)
 for(model in my_cnn_models){
-  results <- cbind(results, evaluate(model, x_test, y_test))
+  results_cnn <- cbind(results_cnn, evaluate(model, x_test, y_test))
 }
 
-colnames(results) <- c('stat', 'nn_model1', 'nn_model2', 'nn_model3', 'nn_model4', 'nn_model5',
-                       'cnn_model1', 'cnn_model2', 'cnn_model3', 'cnn_model4', 'cnn_model5')
-results$stat <- NULL
-results <- t(results)
-colnames(results) <- c('val_loss', 'val_accuracy')
+colnames(results_cnn) <- c('stat', 'cnn_model1', 'cnn_model2', 'cnn_model3', 'cnn_model4', 'cnn_model5')
+results_cnn$stat <- NULL
+results_cnn <- t(results_cnn)
+colnames(results_cnn) <- c('loss', 'accuracy')
+
+kbl(results_cnn, digits = 3)  %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "center")
 ```
+
+# Summary
+
+As you can see from the test accuracy results CNN-s perform better than normal Deep Neural networks on image processing, however, they are pretty accurate as well. 
