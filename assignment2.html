@@ -607,6 +607,8 @@ summary {
 body {
 text-align: justify}
 </style>
+<div id="fashion-mnist-data-10-points" class="section level1">
+<h1>1. Fashion MNIST data (10 points)</h1>
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>In this assignment, the task was to build deep neural net models to predict image classes. The goal is to have as accurate classifier as possible: we are using accuracy as a measure of predictive power.</p>
@@ -1181,9 +1183,439 @@ cnn_model5
 </table>
 </div>
 </div>
+</div>
 <div id="summary" class="section level1">
 <h1>Summary</h1>
-<p>As you can see from the test accuracy results CNN-s perform better than normal Deep Neural networks on image processing, however, they are pretty accurate as well.</p>
+<p>As you can see from the accuracy results CNN-s perform better than normal Deep Neural networks on image processing, however, they are pretty accurate as well.</p>
+</div>
+<div id="hot-dog-or-not-hot-dog-12-points-optional" class="section level1">
+<h1>2. Hot dog or not hot dog? (12 points) OPTIONAL</h1>
+<p>In this problem you are going to predict if a certain image containing food is hot dog or is something else.</p>
+<pre class="r"><code>library(keras)
+library(here)
+library(grid)
+library(magick)
+library(filesstrings)
+library(kableExtra)</code></pre>
+<div id="a-pre-process-data-so-that-it-is-acceptable-by-keras-set-folder-structure-bring-images-to-the-same-size-etc." class="section level4">
+<h4>a, Pre-process data so that it is acceptable by Keras (set folder structure, bring images to the same size, etc).</h4>
+<pre class="r"><code># Setting parameters for image data generators
+
+train_datagen &lt;-  image_data_generator(rescale = 1/255)
+validation_datagen &lt;- image_data_generator(rescale = 1/255)  
+test_datagen &lt;-image_data_generator(rescale = 1/255)  
+
+
+#Generating data
+
+image_size &lt;- c(150, 150)
+batch_size &lt;- 50
+
+train_generator &lt;- flow_images_from_directory(
+  file.path(here(), &quot;data/hot-dog-not-hot-dog/train/&quot;),
+  train_datagen,              # Data generator
+  target_size = image_size,  # Resizes all images to 150 × 150
+  batch_size = batch_size,
+  class_mode = &quot;binary&quot;       # binary_crossentropy loss for binary labels
+)
+
+validation_generator &lt;- flow_images_from_directory(
+  file.path(here(), &quot;data/hot-dog-not-hot-dog/validation/&quot;),   
+  validation_datagen,
+  target_size = image_size,
+  batch_size = batch_size,
+  class_mode = &quot;binary&quot;
+)
+
+test_generator &lt;- flow_images_from_directory(
+  file.path(here(), &quot;data/hot-dog-not-hot-dog/test/&quot;),
+  test_datagen,
+  target_size = image_size,
+  batch_size = batch_size,
+  class_mode = &quot;binary&quot;
+)</code></pre>
+</div>
+<div id="b-estimate-a-convolutional-neural-network-to-predict-if-an-image-contains-a-hot-dog-or-not.-evaluate-your-model-on-the-test-set." class="section level4">
+<h4>b, Estimate a convolutional neural network to predict if an image contains a hot dog or not. Evaluate your model on the test set.</h4>
+<p>In the code snippet below, you can see two different CNN models. The first one was a base model, while the second one is the result of a lot of experimentation. With this dataset, these models performed poorly as you can see in the summary table at the end of this exercise.</p>
+<pre class="r"><code>#Define model1
+hot_dog_model1 &lt;- keras_model_sequential() 
+hot_dog_model1 %&gt;% 
+  layer_conv_2d(filters = 32,
+                kernel_size = c(3, 3), 
+                activation = &#39;relu&#39;,
+                input_shape = c(150, 150, 3)) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_conv_2d(filters = 16,
+                kernel_size = c(3, 3), 
+                activation = &#39;relu&#39;) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_conv_2d(filters = 16,
+                kernel_size = c(3, 3), 
+                activation = &#39;relu&#39;) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_dropout(rate = 0.25) %&gt;% 
+  layer_flatten() %&gt;% 
+  layer_dense(units = 8, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 1, activation = &quot;sigmoid&quot;)   # for binary
+
+hot_dog_model1 %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = &quot;rmsprop&quot;,
+  metrics = c(&quot;accuracy&quot;)
+)
+
+#hotdog_model1_fit &lt;- hot_dog_model1 %&gt;% fit(
+#  train_generator,
+#  steps_per_epoch = train_generator$n / batch_size,
+#  epochs = 20,
+#  validation_data = validation_generator,
+#  validation_steps = validation_generator$n / batch_size, 
+#  callbacks = list(
+#    callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1))
+#)
+#saveRDS(hotdog_model1_fit, &quot;models/hotdog_model1_fit.rds&quot;)
+#save_model_hdf5(hot_dog_model1, &quot;models/hot_dog_model1.h5&quot;)
+#evaluate(hot_dog_model1, test_generator)
+
+hot_dog_model1 &lt;- load_model_hdf5(&quot;models/hot_dog_model1.h5&quot;)
+
+#Define model2
+#https://github.com/matiascaputti/not-hotdog/blob/master/1-%20Not%20Hotdog%20-%20base.ipynb
+
+hot_dog_model2 &lt;- keras_model_sequential() 
+hot_dog_model2 %&gt;% 
+  layer_conv_2d(filters = 64,
+                kernel_size = c(2, 2), 
+                activation = &#39;relu&#39;,
+                input_shape = c(150, 150, 3)) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  
+  layer_conv_2d(filters = 32,
+                kernel_size = c(2, 2), 
+                activation = &#39;relu&#39;) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_dropout(rate = 0.2) %&gt;%
+  
+  layer_global_average_pooling_2d() %&gt;% # this converts our 3D feature maps to 1D feature vectors
+  layer_dense(units = 1024, activation = &#39;relu&#39;) %&gt;% 
+  layer_dropout(rate = 0.4) %&gt;%
+
+  layer_dense(units = 1, activation = &quot;sigmoid&quot;)   # for binary
+
+hot_dog_model2 %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = &#39;rmsprop&#39;,
+  metrics = c(&quot;accuracy&quot;)
+)
+
+#hotdog_model2_fit &lt;- hot_dog_model2 %&gt;% fit(
+#  train_generator,
+#  steps_per_epoch = train_generator$n / batch_size,
+#  epochs = 40,
+#  validation_data = validation_generator,
+#  validation_steps = validation_generator$n / batch_size,
+#  callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1)
+#)
+#saveRDS(hotdog_model2_fit, &quot;models/hotdog_model2_fit.rds&quot;)
+#save_model_hdf5(hot_dog_model2, &quot;models/hot_dog_model2.h5&quot;)
+#evaluate(hot_dog_model2, test_generator)
+
+hot_dog_model2 &lt;- load_model_hdf5(&quot;models/hot_dog_model2.h5&quot;)</code></pre>
+</div>
+<div id="c-could-data-augmentation-techniques-help-with-achieving-higher-predictive-accuracy-try-some-augmentations-that-you-think-make-sense-and-compare" class="section level4">
+<h4>c, Could data augmentation techniques help with achieving higher predictive accuracy? Try some augmentations that you think make sense and compare</h4>
+<p>I have tried 3 different augmentations with the best model I had from the previous section in the following code snippet. At the end of this exercise, you can see that some improved the validation accuracy, but I also checked the accuracy on the test sample which showed different results (no improvement compared to the best model in the previous chapter).</p>
+<pre class="r"><code>#DATA AUG1
+train_datagen = image_data_generator(
+  rescale = 1/255,
+  rotation_range = 40,
+  width_shift_range = 0.2,
+  height_shift_range = 0.2,
+  shear_range = 0.2,
+  zoom_range = 0.2,
+  horizontal_flip = TRUE,
+  fill_mode = &quot;nearest&quot;
+)
+train_generator &lt;- flow_images_from_directory(
+  file.path(here(), &quot;/data/hot-dog-not-hot-dog/train&quot;), # Target directory  
+  train_datagen,              # Data generator
+  target_size = image_size,  # Resizes all images to 150 × 150
+  batch_size = batch_size,
+  class_mode = &quot;binary&quot;       # binary_crossentropy loss for binary labels
+)
+
+#hotdog_model2_fit_aug1 &lt;- hot_dog_model2 %&gt;% fit(
+#  train_generator,
+#  steps_per_epoch = train_generator$n / batch_size,
+#  epochs = 20,
+#  validation_data = validation_generator,
+#  validation_steps = validation_generator$n / batch_size,
+#  callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1)
+#)
+#saveRDS(hotdog_model2_fit_aug1, &quot;models/hotdog_model2_fit_aug1.rds&quot;)
+#save_model_hdf5(hot_dog_model2, &quot;models/hot_dog_model2_aug1.h5&quot;)
+#evaluate(hot_dog_model2, test_generator)
+
+hot_dog_model2_aug1 &lt;- load_model_hdf5(&quot;models/hot_dog_model2_aug1.h5&quot;)
+
+#DATA AUG2
+train_datagen =  image_data_generator(
+  rescale = 1/255,
+  rotation_range = 180,
+  width_shift_range = 0.4,
+  height_shift_range = 0.4,
+  shear_range = 0.4,
+  zoom_range = 0.4,
+  horizontal_flip = TRUE,
+  fill_mode = &quot;nearest&quot;
+)
+train_generator &lt;- flow_images_from_directory(
+  file.path(here(), &quot;/data/hot-dog-not-hot-dog/train&quot;), # Target directory  
+  train_datagen,              # Data generator
+  target_size = image_size,  # Resizes all images to 150 × 150
+  batch_size = batch_size,
+  class_mode = &quot;binary&quot;       # binary_crossentropy loss for binary labels
+)
+
+#hotdog_model2_fit_aug1 &lt;- hot_dog_model2 %&gt;% fit(
+#  train_generator,
+#  steps_per_epoch = train_generator$n / batch_size,
+#  epochs = 20,
+#  validation_data = validation_generator,
+#  validation_steps = validation_generator$n / batch_size,
+#  callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1)
+#)
+#saveRDS(hotdog_model2_fit_aug2, &quot;models/hotdog_model2_fit_aug2.rds&quot;)
+#save_model_hdf5(hot_dog_model2, &quot;models/hot_dog_model2_aug2.h5&quot;)
+#evaluate(hot_dog_model2, test_generator)
+
+hot_dog_model2_aug2 &lt;- load_model_hdf5(&quot;models/hot_dog_model2_aug2.h5&quot;)
+
+#DATA AUG3
+train_datagen = image_data_generator(
+  rescale = 1/255,
+  rotation_range = 90,
+  width_shift_range = 0.3,
+  height_shift_range = 0.3,
+  shear_range = 0.3,
+  zoom_range = 0.3,
+  horizontal_flip = TRUE,
+  fill_mode = &quot;nearest&quot;
+)
+train_generator &lt;- flow_images_from_directory(
+  file.path(here(), &quot;/data/hot-dog-not-hot-dog/train&quot;), # Target directory  
+  train_datagen,              # Data generator
+  target_size = image_size,  # Resizes all images to 150 × 150
+  batch_size = batch_size,
+  class_mode = &quot;binary&quot;       # binary_crossentropy loss for binary labels
+)
+
+#hotdog_model2_fit_aug3 &lt;- hot_dog_model2 %&gt;% fit(
+#  train_generator,
+#  steps_per_epoch = train_generator$n / batch_size,
+#  epochs = 20,
+#  validation_data = validation_generator,
+#  validation_steps = validation_generator$n / batch_size,
+#  callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1)
+#)
+#saveRDS(hotdog_model2_fit_aug3, &quot;models/hotdog_model2_fit_aug3.rds&quot;)
+#save_model_hdf5(hot_dog_model2, &quot;models/hot_dog_model2_aug3.h5&quot;)
+#evaluate(hot_dog_model2, test_generator)
+
+hot_dog_model2_aug3 &lt;- load_model_hdf5(&quot;models/hot_dog_model2_aug3.h5&quot;)
+
+model_eval_list &lt;- list()
+model_eval_list[&#39;final_model_no_aug&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2, validation_generator))
+model_eval_list[&#39;final_model_aug1&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_aug1, validation_generator))
+model_eval_list[&#39;final_model_aug2&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_aug2, validation_generator))
+model_eval_list[&#39;final_model_aug3&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_aug3, validation_generator))
+
+model_eval_list_test &lt;- list()
+model_eval_list_test[&#39;final_model_no_aug&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2, test_generator))
+model_eval_list_test[&#39;final_model_aug1&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_aug1, test_generator))
+model_eval_list_test[&#39;final_model_aug2&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_aug2, test_generator))
+model_eval_list_test[&#39;final_model_aug3&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_aug3, test_generator))</code></pre>
+</div>
+<div id="d-try-to-rely-on-some-pre-built-neural-networks-to-aid-prediction.-can-you-achieve-a-better-performance-using-transfer-learning-for-this-problem" class="section level4">
+<h4>d, Try to rely on some pre-built neural networks to aid prediction. Can you achieve a better performance using transfer learning for this problem?</h4>
+<p>In the following code snippet, I relied on two different pre-built NN to aid my prediction. As you can see in the summary table at the end they performed significantly better than previous models.</p>
+<pre class="r"><code># PRE TRAINED MODELS
+ 
+#N 1
+# imagenetet w INCEPLTION_V3
+conv_base &lt;- application_inception_v3(
+  weights = &quot;imagenet&quot;,
+  include_top = FALSE,
+  input_shape = c(image_size, 3)
+)
+
+#summary(conv_base)
+freeze_weights(conv_base)
+
+hot_dog_model2_inception_v3 &lt;- keras_model_sequential()%&gt;%
+  conv_base %&gt;% 
+  layer_global_average_pooling_2d() %&gt;% 
+  layer_dense(units = 16, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 1, activation = &#39;sigmoid&#39;)
+
+hot_dog_model2_inception_v3 %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = &#39;rmsprop&#39;,
+  metrics = c(&quot;accuracy&quot;)
+)
+
+#hot_dog_model2_inception_v3_fit &lt;- hot_dog_model2_inception_v3 %&gt;% fit(
+#  train_generator,
+#  steps_per_epoch = train_generator$n / batch_size, 
+#  epochs = 15,
+#  validation_data = validation_generator,
+#  validation_steps = validation_generator$n / batch_size, 
+#  callbacks = list(
+#   callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1, patience = 3))
+#)
+#saveRDS(hot_dog_model2_inception_v3_fit, &quot;models/hot_dog_model2_inception_v3_fit.rds&quot;)
+#save_model_hdf5(hot_dog_model2_inception_v3, &quot;models/hot_dog_model2_inception_v3.h5&quot;)
+#evaluate(hot_dog_model2_inception_v3, test_generator)
+
+hot_dog_model2_inception_v3 &lt;- load_model_hdf5(&quot;models/hot_dog_model2_inception_v3.h5&quot;)
+
+model_eval_list[&#39;final_imagenet_inception_v3&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_inception_v3, validation_generator))
+model_eval_list_test[&#39;final_imagenet_inception_v3&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_inception_v3, test_generator))
+
+
+#N 2
+# imagenetet w MOBILENET
+base_model &lt;- application_mobilenet(
+  weights = &#39;imagenet&#39;, 
+  include_top = FALSE,
+  input_shape = c(image_size, 3))
+
+#summary(base_model)
+freeze_weights(base_model)
+
+hot_dog_model2_mobilenet &lt;- keras_model_sequential()%&gt;%
+  base_model %&gt;% 
+  layer_global_average_pooling_2d() %&gt;% 
+  layer_dense(units = 16, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 1, activation = &#39;sigmoid&#39;)
+
+hot_dog_model2_mobilenet %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = &#39;rmsprop&#39;,
+  metrics = c(&quot;accuracy&quot;)
+)
+
+#hot_dog_model2_mobilenet_fit &lt;- hot_dog_model2_mobilenet %&gt;% fit(
+# train_generator,
+# steps_per_epoch = train_generator$n / batch_size,
+# epochs = 10,
+# validation_data = validation_generator,
+# validation_steps = validation_generator$n / batch_size, 
+# callbacks = list(
+#   callback_reduce_lr_on_plateau(monitor = &quot;val_loss&quot;, factor = 0.1, patience = 5))
+#)
+#saveRDS(hot_dog_model2_mobilenet_fit, &quot;models/hot_dog_model2_mobilenet_fit.rds&quot;)
+#save_model_hdf5(hot_dog_model2_mobilenet, &quot;models/hot_dog_model2_mobilenet.h5&quot;)
+#evaluate(hot_dog_model2_mobilenet, test_generator)
+
+hot_dog_model2_mobilenet &lt;- load_model_hdf5(&quot;models/hot_dog_model2_mobilenet.h5&quot;)
+
+model_eval_list[&#39;final_imagenet_mobilenet&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_mobilenet, validation_generator))
+model_eval_list_test[&#39;final_imagenet_mobilenet_test&#39;] &lt;- as.data.frame(evaluate(hot_dog_model2_mobilenet, test_generator))
+
+res_valid &lt;- t(as.data.frame(model_eval_list))
+res_test &lt;- t(as.data.frame(model_eval_list_test))
+
+
+colnames(res_valid) &lt;- c(&#39;validation loss&#39;,&#39;validation accuracy&#39;)
+colnames(res_test) &lt;- c(&#39;validation loss&#39;,&#39;validation accuracy&#39;)</code></pre>
+<p>In the following table, you can see the validation loss and validation accuracy statistics of all the models trained above. You can see that both models based on other pre-trained models performed significantly better than others. I also evaluated the best model on the test set which resulted in 0.818 accuracy meaning that the model is kind of robust as it is just slightly lower than the validation accuracy.</p>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+validation loss
+</th>
+<th style="text-align:right;">
+validation accuracy
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+final_model_no_aug
+</td>
+<td style="text-align:right;">
+0.652
+</td>
+<td style="text-align:right;">
+0.627
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+final_model_aug1
+</td>
+<td style="text-align:right;">
+0.663
+</td>
+<td style="text-align:right;">
+0.590
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+final_model_aug2
+</td>
+<td style="text-align:right;">
+0.651
+</td>
+<td style="text-align:right;">
+0.653
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+final_model_aug3
+</td>
+<td style="text-align:right;">
+0.654
+</td>
+<td style="text-align:right;">
+0.590
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+final_imagenet_inception_v3
+</td>
+<td style="text-align:right;">
+0.391
+</td>
+<td style="text-align:right;">
+0.817
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+final_imagenet_mobilenet
+</td>
+<td style="text-align:right;">
+0.379
+</td>
+<td style="text-align:right;">
+0.833
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 
